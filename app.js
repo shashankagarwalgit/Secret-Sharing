@@ -31,7 +31,8 @@ app.use(passport.session());
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
-    googleId: String
+    googleId: String,
+    secret: String
 });
 
 userSchema.plugin(passLocalMongo);
@@ -58,7 +59,6 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    console.log(profile);
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
       return cb(err, user);
     });
@@ -91,11 +91,33 @@ app.get("/register" , function(req,res){
 
 app.get("/secrets" , function(req,res){
     if(req.isAuthenticated()){
-        res.render("secrets");
+        User.find({ _id: req.user.id}, "secret").then((foundUsers)=>{
+            res.render("secrets", {userwithSecrets: foundUsers});
+        });
     }
     else{
         res.redirect("/login");
     }
+});
+
+app.get("/submit" , function(req,res){
+    if(req.isAuthenticated()){
+        res.render("submit");
+    }
+    else{
+        res.redirect("/login");
+    }
+
+});
+
+app.post("/submit" , function(req,res){
+    const submitSecret = req.body.secret;
+    User.findById(req.user.id).then((foundUser)=>{
+        foundUser.secret = submitSecret;
+        foundUser.save().then(()=>{
+            res.redirect("/secrets");
+        });
+    });
 });
 
 app.get("/logout" , function(req,res){
