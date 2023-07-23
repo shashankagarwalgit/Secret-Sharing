@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     googleId: String,
-    secret: String
+    secret: [String]
 });
 
 userSchema.plugin(passLocalMongo);
@@ -113,7 +113,7 @@ app.get("/submit" , function(req,res){
 app.post("/submit" , function(req,res){
     const submitSecret = req.body.secret;
     User.findById(req.user.id).then((foundUser)=>{
-        foundUser.secret = submitSecret;
+        foundUser.secret.push(submitSecret);
         foundUser.save().then(()=>{
             res.redirect("/secrets");
         });
@@ -161,5 +161,5 @@ app.post("/login" , function(req,res){
 });
 
 app.listen(3000 , function(){
-    console.log("Server strated at 3000");
+    console.log("Server started at 3000");
 });
