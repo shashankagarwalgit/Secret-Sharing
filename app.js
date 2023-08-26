@@ -10,7 +10,7 @@ const passLocalMongo = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 
-mongoose.connect("mongodb://127.0.0.1:27017/userDB" , {useNewUrlParser: true});
+mongoose.connect("mongodb+srv://shashankdev:Test123456@cluster0.gwlbr3g.mongodb.net/userDB?retryWrites=true" , {useNewUrlParser: true});
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     googleId: String,
-    secret: String
+    secret: [String]
 });
 
 userSchema.plugin(passLocalMongo);
@@ -55,7 +55,7 @@ passport.deserializeUser(function(id,done){
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/secrets",
+    callbackURL: "https://ershashankgit-humble-goldfish-45r94w7w9ww355wp-3000.preview.app.github.dev/auth/google/secrets",
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
@@ -113,7 +113,7 @@ app.get("/submit" , function(req,res){
 app.post("/submit" , function(req,res){
     const submitSecret = req.body.secret;
     User.findById(req.user.id).then((foundUser)=>{
-        foundUser.secret = submitSecret;
+        foundUser.secret.push(submitSecret);
         foundUser.save().then(()=>{
             res.redirect("/secrets");
         });
@@ -161,5 +161,5 @@ app.post("/login" , function(req,res){
 });
 
 app.listen(3000 , function(){
-    console.log("Server strated at 3000");
+    console.log("Server started at 3000");
 });
